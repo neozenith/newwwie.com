@@ -3,4 +3,5 @@
 import {Meetup} from './events/Meetup';
 
 // Initialise our event listing
-new Meetup();
+new Meetup('meetupEvents');
+new Meetup('meetups');

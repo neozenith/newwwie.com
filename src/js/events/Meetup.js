@@ -11,7 +11,8 @@ export class Meetup {
      *
      * @param {object} response The JSON response from the Meetup API
      */
-    constructor() {
+    constructor(targetElement) {
+        this.targetElement = targetElement;
         this.injectScript();
     }
 
@@ -83,8 +84,8 @@ export class Meetup {
             // Check to make sure we have at least 1 result
             if (response.results.length > 0) {
                 render(
-                  this.renderList(response.results),
-                  document.getElementById('meetupEvents')
+                  this.renderList(response.results, this.targetElement),
+                  document.getElementById(this.targetElement)
                 );
             } else {
                 // We have no results, let the user know we have no upcoming events
@@ -92,7 +93,7 @@ export class Meetup {
                     <li>
                         <p>It appears there are no upcoming events. Check back soon.</p>
                     </li>,
-                    document.getElementById('meetupEvents')
+                    document.getElementById(this.targetElement)
                 );
             }
         } else {
@@ -102,7 +103,7 @@ export class Meetup {
                     <p>{response.problem}</p>
                     <p>{response.details}</p>
                 </li>,
-                document.getElementById('meetupEvents')
+                document.getElementById(this.targetElement)
             );
         }
     }
@@ -115,14 +116,31 @@ export class Meetup {
      *
      * @param {object} results
      */
-    renderList(results) {
+  renderList(results, targetElement) {
         return results.map(function (item, i) {
             let startTime = new Date(item.time);
             let prettyDay = this.niceDay(startTime.getDay());
             let prettyMonth = this.niceMonth(startTime.getMonth());
             let prettyTime = this.niceTime(startTime);
 
-            return (
+          if (targetElement === 'meetups') {
+              let lat = null;
+              let lon = null;
+              if (item.venue) {
+                  if (item.venue.hasOwnProperty('lat') && item.venue.hasOwnProperty('lon')) {
+                    lat = item.venue.lat;
+                    lon = item.venue.lon;
+                  }
+              }
+
+              return (
+                <div>
+                  <div>{item.group.name},</div>
+                  <div>Lat: {lat}, Lon: {lon}</div>
+                </div>
+              );
+            } else {
+              return (
                 <li class="eventItem">
                     <div class="eventItem-left">
                         {this.renderImage(item.group, item.photo_url)}
@@ -171,7 +189,9 @@ export class Meetup {
                     </div>
                     <a class="button" href={item.event_url}>More info</a>
                 </li>
-            )
+
+              )
+            }
         }.bind(this));
     }
 
